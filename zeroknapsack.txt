@@ -1,0 +1,66 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+// One item of the knapsack
+struct Item {
+    int value;
+    int weight;
+    double ratio;   // value / weight
+};
+
+// Sorting rule: item with higher ratio comes first
+bool compare(Item a, Item b) {
+    return a.ratio > b.ratio;
+}
+
+int main() {
+    int n;
+    cout << "Enter number of items: ";
+    cin >> n;
+
+    vector<Item> items(n);
+
+    for (int i = 0; i < n; i++) {
+        cout << "Enter value and weight of item " << i + 1 << ": ";
+        cin >> items[i].value >> items[i].weight;
+        items[i].ratio = (double)items[i].value / items[i].weight;  // calculate ratio
+    }
+
+    double capacity;
+    cout << "Enter capacity of knapsack: ";
+    cin >> capacity;
+
+    // Step 1: sort items by ratio in decreasing order (greedy choice)
+    sort(items.begin(), items.end(), compare);
+
+    double totalValue = 0;          // total profit collected
+    double remaining = capacity;    // space left in the bag
+
+    cout << "\nItems taken:\n";
+
+    // Step 2: pick items one by one
+    for (int i = 0; i < n; i++) {
+        if (remaining == 0)
+            break;                  // bag is full
+
+        if (items[i].weight <= remaining) {
+            // Whole item fits: take it completely
+            remaining -= items[i].weight;
+            totalValue += items[i].value;
+            cout << "Value " << items[i].value << ", Weight " << items[i].weight
+                 << " -> taken fully\n";
+        } else {
+            // Item does not fit: take only the fraction that fits
+            double fraction = remaining / items[i].weight;
+            totalValue += items[i].value * fraction;
+            cout << "Value " << items[i].value << ", Weight " << items[i].weight
+                 << " -> taken " << fraction << " part\n";
+            remaining = 0;          // bag is now full
+        }
+    }
+
+    cout << "\nMaximum value in knapsack = " << totalValue << endl;
+    return 0;
+}

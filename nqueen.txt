@@ -1,0 +1,59 @@
+def is_safe(board, row, col, n):
+    for i in range(n):
+        for j in range(n):
+            if board[i][j] == 1:
+                if i == row and j == col:
+                    continue
+
+                if j == col or abs(i - row) == abs(j - col):
+                    return False
+
+    return True
+
+def solve(board, row, n, fixed_row, fixed_col):
+
+    if row == n:
+        return True
+
+    # Skip the row of first Queen
+    if row == fixed_row:
+        if is_safe(board, row, fixed_col, n):
+            return solve(board, row + 1, n, fixed_row, fixed_col)
+        return False
+
+    for col in range(n):
+        if is_safe(board, row, col, n):
+            board[row][col] = 1
+
+            if solve(board, row + 1, n, fixed_row, fixed_col):
+                return True
+
+            # Backtracking
+            board[row][col] = 0
+
+    return False
+
+def print_board(board):
+    for row in board:
+        print(" ".join("Q" if x == 1 else "." for x in row))
+
+# Input
+n = int(input("Enter N: "))
+
+r = int(input("Enter row of first Queen (1-N): ")) - 1
+c = int(input("Enter column of first Queen (1-N): ")) - 1
+
+if n <= 0 or r < 0 or r >= n or c < 0 or c >= n:
+    print("Invalid input")
+else:
+    board = [[0] * n for _ in range(n)]
+
+    # Place first Queen
+    board[r][c] = 1
+
+    # Solve
+    if solve(board, 0, n, r, c):
+        print("\nFinal N-Queens Matrix:")
+        print_board(board)
+    else:
+        print("\nNo solution exists for this first Queen position.")

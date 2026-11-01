@@ -1,0 +1,181 @@
+import java.util.*;
+
+class Node {
+    char ch;
+    int freq;
+    Node left, right;
+
+    Node(char ch, int freq) {
+        this.ch = ch;
+        this.freq = freq;
+    }
+}
+public class HuffmanEncoding {
+    static Node root;
+    static String text;
+    static Map<Character, String> codes = new HashMap<>();
+
+    static void buildTree(String str) {
+
+        text = str;
+
+        Map<Character, Integer> freq = new HashMap<>();
+
+        for (char c : str.toCharArray()) {
+            freq.put(c, freq.getOrDefault(c, 0) + 1);
+        }
+
+        PriorityQueue<Node> pq = new PriorityQueue<>(
+                (a, b) -> a.freq - b.freq
+        );
+
+        for (char c : freq.keySet()) {
+            pq.add(new Node(c, freq.get(c)));
+        }
+
+        while (pq.size() > 1) {
+
+            Node left = pq.poll();
+            Node right = pq.poll();
+
+            Node parent = new Node('\0', left.freq + right.freq);
+
+            parent.left = left;
+            parent.right = right;
+
+            pq.add(parent);
+        }
+        root = pq.poll();
+        codes.clear();
+        generateCodes(root, "");
+        System.out.println("Huffman Tree Built Successfully!");
+    }
+    static void generateCodes(Node node, String code) {
+
+        if (node == null)
+            return;
+
+        if (node.left == null && node.right == null) {
+
+            codes.put(node.ch, code.isEmpty() ? "0" : code);
+
+            return;
+        }
+        generateCodes(node.left, code + "0");
+        generateCodes(node.right, code + "1");
+    }
+    static String encode(String str) {
+
+        StringBuilder result = new StringBuilder();
+
+        for (char c : str.toCharArray()) {
+
+            if (!codes.containsKey(c))
+                return null;
+
+            result.append(codes.get(c));
+        }
+        return result.toString();
+    }
+
+    static String decode(String encoded) {
+
+        StringBuilder result = new StringBuilder();
+
+        Node current = root;
+
+        for (char bit : encoded.toCharArray()) {
+
+            if (bit == '0')
+                current = current.left;
+
+            else if (bit == '1')
+                current = current.right;
+
+            else
+                return null;
+
+            if (current == null)
+                return null;
+
+            if (current.left == null && current.right == null) {
+                result.append(current.ch);
+                current = root;
+            }
+        }
+        if (current != root)
+            return null;
+        return result.toString();
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        int choice;
+        do {
+            System.out.println("\n--- HUFFMAN ENCODING ---");
+            System.out.println("1. Build Huffman Tree");
+            System.out.println("2. Encode Text");
+            System.out.println("3. Decode Text");
+            System.out.println("4. Exit");
+
+            System.out.print("Enter your choice: ");
+
+            choice = sc.nextInt();
+            sc.nextLine();
+
+            switch (choice) {
+                case 1:
+
+                    System.out.print("Enter text: ");
+                    String str = sc.nextLine();
+                    if (str.isEmpty()) {
+                        System.out.println("Text cannot be empty!");
+                        break;
+                    }
+
+                    buildTree(str);
+                    System.out.println("Character Frequencies and Codes:");
+
+                    for (char c : codes.keySet()) {
+                        System.out.println(c + " : " + codes.get(c));
+                    }
+                    break;
+
+                case 2:
+                    if (root == null) {
+                        System.out.println("First build the Huffman Tree!");
+                        break;
+                    }
+                    String encoded = encode(text);
+                    System.out.println("Original Text: " + text);
+                    System.out.println("Encoded Text: " + encoded);
+                    break;
+
+                case 3:
+                    if (root == null) {
+                        System.out.println("First build the Huffman Tree!");
+                        break;
+                    }
+                    System.out.print("Enter encoded binary text: ");
+                    String binary = sc.nextLine();
+                    String decoded = decode(binary);
+
+                    if (decoded == null)
+                        System.out.println("Invalid encoded text!");
+                    else
+                        System.out.println("Decoded Text: " + decoded);
+                    break;
+
+                case 4:
+
+                    System.out.println("Program Exited.");
+                    break;
+
+                default:
+                    System.out.println("Invalid Choice!");
+            }
+        } while (choice != 4);
+        sc.close();
+    }
+}
