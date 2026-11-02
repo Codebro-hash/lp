@@ -1,0 +1,64 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n, W;
+    cout << "Enter number of items: ";
+    cin >> n;
+
+    // Arrays start from index 1 so item numbers match row numbers
+    vector<int> wt(n + 1), val(n + 1);
+
+    for (int i = 1; i <= n; i++) {
+        cout << "Enter weight and value of item " << i << ": ";
+        cin >> wt[i] >> val[i];
+    }
+
+    cout << "Enter capacity of knapsack: ";
+    cin >> W;
+
+    // dp[i][w] = max value using first i items with capacity w
+    // All cells start at 0, which also handles the base cases
+    vector<vector<int>> dp(n + 1, vector<int>(W + 1, 0));
+
+    // Fill the table row by row
+    for (int i = 1; i <= n; i++) {
+        for (int w = 0; w <= W; w++) {
+
+            if (wt[i] <= w) {
+                // Item fits: choose the better of "don't take" and "take"
+                int dontTake = dp[i - 1][w];
+                int take = val[i] + dp[i - 1][w - wt[i]];
+                dp[i][w] = max(dontTake, take);
+            } else {
+                // Item is too heavy: we can't take it
+                dp[i][w] = dp[i - 1][w];
+            }
+        }
+    }
+
+    // Print the DP table
+    cout << "\nDP Table:\n";
+    for (int i = 0; i <= n; i++) {
+        for (int w = 0; w <= W; w++)
+            cout << dp[i][w] << "\t";
+        cout << endl;
+    }
+
+    // The answer is in the bottom-right cell
+    cout << "\nMaximum value in knapsack = " << dp[n][W] << endl;
+
+    // Backtrack to find which items were taken
+    cout << "Items taken: ";
+    int w = W;
+    for (int i = n; i >= 1; i--) {
+        if (dp[i][w] != dp[i - 1][w]) {   // value changed, so item i was taken
+            cout << i << " ";
+            w -= wt[i];                   // reduce remaining capacity
+        }
+    }
+    cout << endl;
+
+    return 0;
+}
